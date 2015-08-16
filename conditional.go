@@ -16,6 +16,7 @@ const (
 	IfMatch           = "If-Match"
 	IfNoneMatch       = "If-None-Match"
 	IfRange           = "If-Range"
+	Range             = "Range"
 )
 
 // HTTP Methods that are checked for when calculating conditional requests
@@ -24,24 +25,27 @@ const (
 	Head = "HEAD"
 )
 
-// HTTP header used when calculating Range based conditional requests
-const Range = "Range"
-
+// Etagger defines an interface that the resource passed into the gin-conditional package can implement.
+// If the interface is implemented, the package can test for the headers:
+// "If-Match", "If-None-Match", and "If-Range"
 type Etagger interface {
 	// Etag
 	Etag() (string, error)
 }
 
+// LastModifier defines an interface that the resource passed into the gin-conditional package can implement.
+// If the interface is implemented the package can test for the headers:
+// "If-Modified-Since" and "If-Unmodified-Since"
 type LastModifier interface {
 	LastModified() time.Time
 }
 
 var (
-	// An error that the Etag function can return to signify that
-	// no resource exists at the given Location.
+	// ErrNoResource is an error the package receives from the Etag function part of Etagger.
+	// It is to signify that no resource exists according to the origin server.
 	ErrNoResource = errors.New("No Resource Available")
 
-	// Server MUST respond with either:
+	// ErrWasModified is an error the package sends so the user can decide the proper course.
 	// a) the 412 (Precondition Failed) status code
 	// b) one of the 2xx (Successful) status codes if the
 	//    origin server has verified that a state change is being
@@ -49,6 +53,7 @@ var (
 	//    in the current state of the target resource
 	ErrWasModified = errors.New("Resource was modified since header, check if final state would match")
 
+	// ErrRangeMismatch is an error the package sends
 	ErrRangeMismatch = errors.New("Calculating If-Range failed, respond with entire resource")
 )
 
